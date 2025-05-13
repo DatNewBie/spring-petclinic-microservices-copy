@@ -27,7 +27,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${COMMIT_ID}")
+                    dockerImage = docker.build("${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${COMMIT_ID}", "docker/")
                 }
             }
         }
