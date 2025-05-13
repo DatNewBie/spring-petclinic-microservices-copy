@@ -31,7 +31,10 @@ pipeline {
                         'spring-petclinic-customers-service',
                         'spring-petclinic-api-gateway',
                         'spring-petclinic-discovery-server',
-                        'spring-petclinic-config-server'
+                        'spring-petclinic-config-server',
+                        'spring-petclinic-admin-server',
+                        'spring-petclinic-genai-service'
+                        
                     ]
 
                     docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
