@@ -42,7 +42,7 @@ pipeline {
                             def jarPath = "${service}/target/${artifactName}.jar"
 
                             // Build .jar
-                            sh "cd ${service} && ./mvnw clean package -DskipTests"
+                            sh "./mvnw -pl ${service} clean package -DskipTests"
 
                             // Copy .jar vào docker/
                             sh "cp ${jarPath} docker/${artifactName}.jar"
