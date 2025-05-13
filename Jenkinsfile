@@ -42,10 +42,10 @@ pipeline {
                             def jarPath = "${service}/target/${artifactName}.jar"
 
                             // Build .jar
-                            sh "./mvnw -pl ${service} clean package -DskipTests"
+                            sh "./mvnw -pl ${service} -am clean package -DskipTests"
 
                             // Copy .jar vào docker/
-                            sh "cp ${jarPath} docker/${artifactName}.jar"
+                            sh 'cp ${service}/target/*.jar docker/${ARTIFACT_NAME}.jar'
 
                             // Build Docker image
                             def dockerImage = docker.build("${DOCKERHUB_USERNAME}/${artifactName}:${COMMIT_ID}", "--build-arg ARTIFACT_NAME=${artifactName} docker/")
