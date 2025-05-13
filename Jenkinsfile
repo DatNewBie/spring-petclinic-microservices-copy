@@ -2,10 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Docker Hub credentials ID đã được lưu trong Jenkins credentials
         DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id'
         DOCKERHUB_USERNAME = 'datnewbie'
-        IMAGE_NAME = 'devops_project02'
     }
 
     stages {
@@ -24,19 +22,37 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Push All Services') {
             steps {
                 script {
-                    dockerImage = docker.build("${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${COMMIT_ID}", "docker/")
-                }
-            }
-        }
+                    def services = [
+                        'spring-petclinic-vets-service',
+                        'spring-petclinic-visits-service',
+                        'spring-petclinic-customers-service',
+                        'spring-petclinic-api-gateway',
+                        'spring-petclinic-discovery-server',
+                        'spring-petclinic-config-server'
+                    ]
 
-        stage('Push to Docker Hub') {
-            steps {
-                script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
-                        dockerImage.push()
+                        for (service in services) {
+                            echo "📦 Building service: ${service}"
+
+                            def artifactName = service
+                            def jarPath = "${service}/target/${artifactName}.jar"
+
+                            // Build .jar
+                            sh "cd ${service} && ./mvnw clean package -DskipTests"
+
+                            // Copy .jar vào docker/
+                            sh "cp ${jarPath} docker/${artifactName}.jar"
+
+                            // Build Docker image
+                            def dockerImage = docker.build("${DOCKERHUB_USERNAME}/${artifactName}:${COMMIT_ID}", "--build-arg ARTIFACT_NAME=${artifactName} docker/")
+
+                            // Push image
+                            dockerImage.push()
+                        }
                     }
                 }
             }
@@ -44,11 +60,12 @@ pipeline {
     }
 
     post {
-        failure {
-            echo 'Build failed!'
-        }
         success {
-            echo "Image ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${COMMIT_ID} pushed to Docker Hub successfully."
+            echo "✅ All images built and pushed successfully with tag ${COMMIT_ID}."
+        }
+        failure {
+            echo "❌ Build failed!"
         }
     }
 }
+
