@@ -55,6 +55,12 @@ pipeline {
 
                             // Push image
                             dockerImage.push()
+                            
+                            // Gắn thêm tag 'latest' cho image vừa build
+                            sh "docker tag ${DOCKERHUB_USERNAME}/${artifactName}:${COMMIT_ID} ${DOCKERHUB_USERNAME}/${artifactName}:latest"
+
+                            // Push tag 'latest'
+                            sh "docker push ${DOCKERHUB_USERNAME}/${artifactName}:latest"
                         }
                     }
                 }
